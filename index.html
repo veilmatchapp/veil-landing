@@ -128,10 +128,11 @@ nav{
   margin-bottom:24px;animation:fadeUp 0.8s ease 0.36s both;
 }
 .waitlist-input{
-  all:unset;width:280px;padding:14px 20px;
+  all:unset;width:280px;max-width:100%;padding:14px 20px;
   background:rgba(255,255,255,0.04);border:1px solid var(--border2);
   border-radius:40px;font-size:14px;color:var(--text);font-family:inherit;
   transition:border-color 0.2s,background 0.2s;
+  box-sizing:border-box;
 }
 .waitlist-input::placeholder{color:var(--dim)}
 .waitlist-input:focus{outline:none;border-color:var(--violet);background:rgba(139,92,246,0.06)}
@@ -161,10 +162,10 @@ nav{
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
 .scroll-hint{
-  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:8px;
-  font-size:10px;letter-spacing:0.15em;color:var(--dim);text-transform:uppercase;
-  animation:fadeUp 1s ease 1s both;z-index:2;
+  display:flex;justify-content:center;align-items:center;
+  width:100%;padding:20px 0 36px;
+  z-index:2;position:relative;
+  animation:fadeUp 1s ease 1s both;
 }
 .scroll-line{
   width:1px;height:36px;
@@ -358,10 +359,15 @@ footer{
   .promise-pillars{grid-template-columns:1fr}
   .step:not(:last-child)::after{display:none}
   footer{flex-direction:column;gap:16px;text-align:center}
+  .waitlist-row{flex-direction:column;align-items:center;width:100%}
+  .waitlist-input{width:100% !important;max-width:100% !important;box-sizing:border-box;}
+  .waitlist-btn{width:100%;box-sizing:border-box;}
 }
 @media(max-width:480px){
   .how-steps{grid-template-columns:1fr}
-  .waitlist-input{width:100%}
+  .waitlist-row{flex-direction:column;align-items:center;width:100%}
+  .waitlist-input{width:100% !important;max-width:100% !important;box-sizing:border-box;}
+  .waitlist-btn{width:100%;box-sizing:border-box;}
   .waitlist-form{flex-direction:column;align-items:center}
 }
 
@@ -373,6 +379,8 @@ footer{
   display:flex;flex-direction:column;
   align-items:center;gap:10px;
   animation:fadeUp 0.8s ease 0.36s both;
+  width:100%;max-width:560px;margin:0 auto;
+  padding:0 20px;box-sizing:border-box;
 }
 .waitlist-row{
   display:flex;gap:10px;flex-wrap:wrap;
@@ -463,11 +471,13 @@ footer{
         <button class="waitlist-btn" type="submit" style="margin-top:4px">Join the waitlist</button>
       </form>
       <div class="waitlist-success" id="success-msg">&#10022; You're on the list. We'll reach out when Veil launches in your city.</div>
-      <p class="hero-microcopy" id="microcopy"><strong>Be part of the first wave.</strong> No spam. Unsubscribe anytime.</p>
-      <p class="city-hint">Veil launches city by city. Your city signal shapes where we go first.</p>
+      <div style="display:block;width:100%;text-align:center;margin-top:14px;font-size:12px;color:#5c566e;font-family:'DM Sans',sans-serif;line-height:1.8;">
+        <span style="display:block;margin-bottom:4px;"><strong style="color:#a09ab8;font-weight:400;">Be part of the first wave.</strong> No spam. Unsubscribe anytime.</span>
+        <span style="display:block;">Veil launches city by city. Your city signal shapes where we go first.</span>
+      </div>
     </div>
   </div>
-  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+  <div class="scroll-hint"><div class="scroll-line"></div></div>
 </section>
 
 <section class="problem reveal">
@@ -667,7 +677,7 @@ function handleSubmit(e) {
   e.preventDefault();
   const email = document.getElementById('email-input').value;
   const city  = document.getElementById('city-input').value;
-  submitEntry(email, city, 'success-msg', 'waitlist-form', 'microcopy');
+  submitEntry(email, city, 'success-msg', 'waitlist-form', null);
 }
 
 function handleSubmit2(e) {
@@ -690,7 +700,7 @@ function submitEntry(email, city, successId, formId, microcopyId) {
   btn.disabled = true;
 
   // ── KIT (ConvertKit) INTEGRATION ─────────────────────────────────────────
-  fetch('https://api.convertkit.com/v3/forms/87f81508c3/subscribe', {
+  fetch('https://api.convertkit.com/v3/forms/9267774/subscribe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
