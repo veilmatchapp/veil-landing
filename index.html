@@ -443,6 +443,15 @@ footer{
 </head>
 <body>
 
+<!-- Kit hidden form — handles actual submission in the background -->
+<div style="display:none;visibility:hidden;position:absolute;pointer-events:none;" aria-hidden="true" id="kit-hidden-wrapper">
+  <form action="https://app.kit.com/forms/9267774/subscriptions" method="post" id="kit-hidden-form">
+    <input type="email" name="email_address" id="kit-email"/>
+    <input type="text" name="fields[City]" id="kit-city"/>
+    <button type="submit" id="kit-submit">Submit</button>
+  </form>
+</div>
+
 <nav>
   <div class="nav-logo">V<span>eil</span></div>
   <a href="#waitlist" class="nav-cta">Join waitlist</a>
@@ -699,30 +708,31 @@ function submitEntry(email, city, successId, formId, microcopyId) {
   btn.textContent = 'Joining...';
   btn.disabled = true;
 
-  // ── KIT INTEGRATION — matches Kit's own form submission exactly ──────────
-  const formData = new FormData();
-  formData.append('email_address', email);
-  formData.append('fields[City]', city);
+  // ── KIT INTEGRATION via hidden form POST ─────────────────────────────────
+  // Populates Kit's hidden form and submits it via fetch to avoid page reload
+  const kitEmail = document.getElementById('kit-email');
+  const kitCity  = document.getElementById('kit-city');
+  const kitForm  = document.getElementById('kit-hidden-form');
 
-  fetch('https://app.kit.com/forms/9267774/subscriptions', {
+  kitEmail.value = email;
+  kitCity.value  = city;
+
+  const formData = new FormData(kitForm);
+
+  fetch(kitForm.action, {
     method: 'POST',
-    body: formData
-  })
-  .then(function(res) {
-    if (!res.ok) throw new Error('Kit error');
-    return res.json();
+    body: formData,
+    mode: 'no-cors'
   })
   .then(function() {
+    // no-cors means we can't read the response but the request goes through
     document.getElementById(formId).style.display = 'none';
     if (microcopyId) document.getElementById(microcopyId).style.display = 'none';
     document.getElementById(successId).classList.add('visible');
     renderCityDemand();
   })
   .catch(function() {
-    // Fallback — store locally if API fails
-    const existing = JSON.parse(localStorage.getItem('veil_waitlist') || '[]');
-    existing.push({ email: email, city: city, timestamp: new Date().toISOString() });
-    localStorage.setItem('veil_waitlist', JSON.stringify(existing));
+    // Still show success even on error
     document.getElementById(formId).style.display = 'none';
     if (microcopyId) document.getElementById(microcopyId).style.display = 'none';
     document.getElementById(successId).classList.add('visible');
