@@ -699,29 +699,27 @@ function submitEntry(email, city, successId, formId, microcopyId) {
   btn.textContent = 'Joining...';
   btn.disabled = true;
 
-  // ── KIT (ConvertKit) INTEGRATION ─────────────────────────────────────────
-  fetch('https://api.convertkit.com/v3/forms/9267774/subscribe', {
+  // ── KIT INTEGRATION — matches Kit's own form submission exactly ──────────
+  const formData = new FormData();
+  formData.append('email_address', email);
+  formData.append('fields[City]', city);
+
+  fetch('https://app.kit.com/forms/9267774/subscriptions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      api_key: 'TAVddZVnseyC4BFWzSIwfg',
-      email: email,
-      fields: { City: city }
-    })
+    body: formData
   })
   .then(function(res) {
-    if (!res.ok) throw new Error('Kit API error');
+    if (!res.ok) throw new Error('Kit error');
     return res.json();
   })
   .then(function() {
-    // Show success
     document.getElementById(formId).style.display = 'none';
     if (microcopyId) document.getElementById(microcopyId).style.display = 'none';
     document.getElementById(successId).classList.add('visible');
     renderCityDemand();
   })
   .catch(function() {
-    // If API fails, still show success and store locally as backup
+    // Fallback — store locally if API fails
     const existing = JSON.parse(localStorage.getItem('veil_waitlist') || '[]');
     existing.push({ email: email, city: city, timestamp: new Date().toISOString() });
     localStorage.setItem('veil_waitlist', JSON.stringify(existing));
