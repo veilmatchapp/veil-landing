@@ -413,27 +413,6 @@ footer{
   padding:0 16px;
 }
 .city-hint-dot{ display:none; }
-/* City counter bar */
-.city-demand{
-  display:flex;flex-direction:column;gap:6px;
-  width:100%;max-width:480px;margin:12px auto 0;
-}
-.city-demand-label{
-  font-size:11px;color:var(--dim);letter-spacing:0.08em;text-align:center;
-}
-.city-bars{display:flex;flex-direction:column;gap:4px}
-.city-bar-row{display:flex;align-items:center;gap:8px}
-.city-bar-name{font-size:11px;color:var(--mid);width:90px;text-align:right;flex-shrink:0}
-.city-bar-track{
-  flex:1;height:3px;background:rgba(255,255,255,0.05);
-  border-radius:4px;overflow:hidden;
-}
-.city-bar-fill{
-  height:100%;border-radius:4px;
-  background:linear-gradient(90deg,var(--plum),var(--lavender));
-  transition:width 1s ease;width:0;
-}
-.city-bar-count{font-size:11px;color:var(--dim);flex-shrink:0;width:40px}
 
 @media(max-width:480px){
   .waitlist-row{flex-direction:column;align-items:center}
@@ -664,12 +643,6 @@ footer{
       </form>
       <div class="waitlist-success" id="success-msg-2">&#10022; You're on the list. We'll reach out when Veil launches in your city.</div>
 
-      <!-- City demand visualization — updates dynamically from localStorage -->
-      <div class="city-demand" id="city-demand-wrap" style="display:none">
-        <div class="city-demand-label">Demand by city &mdash; where Veil launches first</div>
-        <div class="city-bars" id="city-bars"></div>
-      </div>
-
       <p style="font-size:12px;color:var(--dim);margin-top:16px">No spam. No games. Just real connection, when it's ready.</p>
     </div>
   </div>
@@ -725,65 +698,14 @@ function submitEntry(email, city, successId, formId, microcopyId) {
     mode: 'no-cors'
   })
   .then(function() {
-    // no-cors means we can't read the response but the request goes through
     document.getElementById(formId).style.display = 'none';
     if (microcopyId) document.getElementById(microcopyId).style.display = 'none';
     document.getElementById(successId).classList.add('visible');
-    renderCityDemand();
   })
   .catch(function() {
-    // Still show success even on error
     document.getElementById(formId).style.display = 'none';
     if (microcopyId) document.getElementById(microcopyId).style.display = 'none';
     document.getElementById(successId).classList.add('visible');
-    renderCityDemand();
-  });
-}
-
-// ── CITY DEMAND BARS ─────────────────────────────────────────────────────────
-// Shows live local demand after a user signs up — social proof + FOMO
-function renderCityDemand() {
-  const entries  = JSON.parse(localStorage.getItem('veil_waitlist') || '[]');
-  const wrap     = document.getElementById('city-demand-wrap');
-  const barsEl   = document.getElementById('city-bars');
-  if (!wrap || !barsEl || entries.length === 0) return;
-
-  // Count by city
-  const counts = {};
-  entries.forEach(e => {
-    if (e.city && e.city !== 'Other' && e.city !== 'Canada' &&
-        e.city !== 'United Kingdom' && e.city !== 'Australia') {
-      counts[e.city] = (counts[e.city] || 0) + 1;
-    }
-  });
-
-  // Sort top 5
-  const sorted = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
-  if (sorted.length === 0) return;
-
-  const max = sorted[0][1];
-  barsEl.innerHTML = '';
-  sorted.forEach(([city, count]) => {
-    const pct = Math.max(8, Math.round((count / max) * 100));
-    const row = document.createElement('div');
-    row.className = 'city-bar-row';
-    row.innerHTML = `
-      <span class="city-bar-name">${city.split(',')[0]}</span>
-      <div class="city-bar-track"><div class="city-bar-fill" style="width:0" data-w="${pct}%"></div></div>
-      <span class="city-bar-count">${count}</span>
-    `;
-    barsEl.appendChild(row);
-  });
-
-  wrap.style.display = 'flex';
-  // Animate bars in
-  requestAnimationFrame(() => {
-    document.querySelectorAll('.city-bar-fill').forEach(bar => {
-      bar.style.width = bar.dataset.w;
-    });
   });
 }
 
